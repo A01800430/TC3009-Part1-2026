@@ -9,8 +9,8 @@ reto, y es lo que separa un notebook que predice bien de un producto que sirve.
 ```
    0:00  qué cruza la frontera                          8 min
    0:08  traer el material de la sesión                 7 min
-   0:15  correr el notebook (sin discutirlo)           15 min
-   0:30  la exportación, a fondo                       30 min
+   0:15  correr el notebook en Colab                   20 min
+   0:35  la exportación, a fondo                       25 min
    1:00  el servicio: cargar, validar, predecir        40 min
    1:40  el test que importa                           12 min
    1:52  cierre                                         8 min
@@ -121,16 +121,50 @@ git add -A && git commit -m "material de la sesion 2"
 
 ---
 
-## 0:15 — Corre el notebook. No lo discutas. (15 min)
+## 0:15 — Corre el notebook en Colab (20 min)
 
-**En tu computadora**, abre `notebooks/01-entrenar-y-exportar.ipynb` y córrelo de arriba a
-abajo.
+El notebook corre en **Google Colab**, no en tu computadora ni en la instancia.
 
-Ya llevaste un módulo entero de modelado: aquí no vamos a hablar de hiperparámetros, ni de
-qué familia de modelos conviene, ni de ingeniería de features. Un `RandomForest` decente y
-seguimos.
+¿Por qué ahí? Porque tu laptop no tiene Python —nunca lo instalaste, a propósito— y la
+instancia no tiene interfaz gráfica. Colab te da un entorno con todo listo y sin instalar
+nada.
 
-Lo único que vale la pena detenerse a mirar mientras corre son **dos decisiones**:
+### Ábrelo en Colab
+
+1. Ve a [colab.research.google.com](https://colab.research.google.com)
+2. **Archivo → Subir cuaderno**, y sube `notebooks/01-entrenar-y-exportar.ipynb` de tu
+   proyecto
+3. En el panel de la izquierda (el icono de carpeta 📁), **arrastra tu carpeta `data`
+   completa**
+
+Te tiene que quedar así:
+
+```
+   /content/
+   └── data/
+       └── train.csv
+```
+
+> ⚠ Lo que subas a Colab **se borra al cerrar la sesión**. Por eso al final del notebook vas
+> a descargar el artefacto: no se queda ahí.
+
+Ahora córrelo de arriba a abajo.
+
+### La primera celda no es relleno
+
+Instala las versiones exactas de `numpy`, `pandas`, `scikit-learn` y `joblib` que están en
+`backend/requirements.txt`. Colab trae las suyas, y **no son necesariamente las de tu
+servidor**.
+
+Si la celda de verificación te pide reiniciar el entorno, hazlo: *Entorno de ejecución →
+Reiniciar sesión*, y vuelve a correr desde ahí. Colab necesita reiniciar cuando cambia una
+librería que ya tenía cargada.
+
+Esto va a parecer un trámite hasta la sesión donde alguien lo salte y su modelo devuelva
+números distintos en el servidor.
+
+Ya llevaste un módulo entero de modelado: aquí no vamos a hablar de hiperparámetros. Lo único
+que vale la pena mirar mientras corre son **dos decisiones**:
 
 ### Las diez features, y por qué no son las mejores
 
@@ -152,6 +186,15 @@ datos que no tiene. Re-entrenamos.
 Ese trade-off —score contra honestidad— es una decisión de producto, no de modelado. Vas a
 tomar la misma en tu reto.
 
+### El artefacto pesa 9 MB, y eso también es una decisión
+
+El bosque tiene 100 árboles y no 300. Con 300 el artefacto pesaría 27 MB y las métricas
+serían las mismas.
+
+Importa porque **ese archivo tiene que viajar**: lo vas a descargar de Colab, subirlo a tu
+repositorio y traerlo a tu instancia. Tres veces por cada cambio. El tamaño del artefacto es
+una decisión de producto, no un detalle de configuración.
+
 ### `OverallQual` pesa 0.58 de la importancia total
 
 Es, con diferencia, la feature más influyente. Y es una **calificación subjetiva del 1 al
@@ -163,9 +206,39 @@ mostrar en la interfaz.
 
 ---
 
-## 0:30 — La exportación, a fondo (30 min)
+## 0:35 — La exportación, a fondo (25 min)
 
-Aquí está el contenido de la sesión. El notebook exporta **tres archivos**, no uno:
+Aquí está el contenido de la sesión. ### Bájalo de Colab y llévalo a tu repositorio
+
+La última celda del notebook te descarga un `artifacts.zip`. Descomprímelo en tu proyecto, de
+forma que quede en `artifacts/`, y súbelo:
+
+**En tu computadora:**
+
+```bash
+git add artifacts/
+git commit -m "artefacto de la sesion 2"
+git push
+```
+
+**En la instancia:**
+
+```bash
+./setup/run sync
+```
+
+```
+   Colab            tu computadora         GitHub          tu instancia
+   ─────            ──────────────         ──────          ────────────
+   entrena   ─zip─▶  artifacts/    ─push─▶   ...    ─sync─▶  lo usa el servicio
+```
+
+**Entrenaste en un lado y vas a servir en otro.** El artefacto viaja por git, igual que el
+código. Es la misma lección de la sesión 1, aplicada a un archivo binario.
+
+---
+
+El notebook exporta **tres archivos**, no uno:
 
 ```
    artifacts/
